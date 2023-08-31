@@ -38,17 +38,21 @@ dependencies:
   get: ^4.6.5
   dots_indicator: ^3.0.0
   page_transition: ^2.0.9
+
   animate_do: ^3.0.2
   smooth_page_indicator: ^1.1.0
   google_fonts: ^4.0.4
   font_awesome_flutter: ^10.4.0
+
+
   supercharged: ^2.1.1
-  #simple_animations: ^5.0.2
   simple_animations: ^4.2.0
 
-  fl_chart: ^0.62.0
   email_validator: ^2.1.17
   flutter_udid: ^2.0.1
+  intl:
+  firebase_auth: ^4.6.3
+  firebase_core: ^2.14.0
 
 dev_dependencies:
   flutter_test:
