@@ -1,10 +1,11 @@
+import 'package:bank_app/Screens/home_view.dart';
 import 'package:bank_app/Screens/send_money.dart';
 import 'package:bank_app/Screens/update_account.dart';
 import 'package:bank_app/Screens/view_transactions.dart';
 import 'package:bank_app/Utilities/card.dart';
 import 'package:flutter/material.dart';
 import 'package:dots_indicator/dots_indicator.dart';
-
+import 'package:flutter/services.dart';
 import '../Utilities/colors.dart';
 import '../Utilities/dimensions.dart';
 import '../Utilities/transaction.dart';
@@ -29,8 +30,16 @@ class _HomePageState extends State<HomePage>
   List images = [];
   double? userBalance;
   String? userName;
+  String? userCardNum;
+  String? userAccountNum;
+  String? userPicture;
   String? userIds;
   Details? user;
+  List manyAccounts = [];
+  String? userBVN;
+  int count = 0;
+
+
 
   @override
   void initState() {
@@ -159,6 +168,16 @@ class _HomePageState extends State<HomePage>
     );
   }
 
+  void _copyAccountNumber() {
+    Clipboard.setData(ClipboardData(text: userAccountNum));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Account number copied to clipboard'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
 
 
 
@@ -172,18 +191,18 @@ class _HomePageState extends State<HomePage>
     final args = ModalRoute.of(context)?.settings.arguments as String?;
 
     // Extract the username from the arguments
-    var userId = args ?? "Guest"; // Set a default value if arguments are null
-    print(userId);
+    var userId = args ?? "Guest"; // Set a default value if arguments are null;
     // Find the customer in the list based on the username
     Details? user;
     for (var customer in customers) {
       if (customer.id == userId) {
         userIds = userId;
         userName = customer.name;
-        print('this $userIds');
         user = customer;
-        break;
+
+
       }
+
     }
 
     // Check if the user exists
@@ -191,6 +210,10 @@ class _HomePageState extends State<HomePage>
       // Access the user balance
       userBalance = user.balance;
       userName = user.name;
+      userCardNum = user.cardNumber;
+      userAccountNum = user.accountNumber;
+      userBVN = user.bvn;
+      userPicture = user.picture;
 
 
     } else {
@@ -198,82 +221,108 @@ class _HomePageState extends State<HomePage>
       print('User not found');
     }
 
+    // Add the current user as the first customer in the list
+    manyAccounts.insert(0, user?.cardNumber);
+
+// Add other customers with the same BVN to the list
+    for (var customer in customers) {
+      if (customer.bvn == userBVN && customer.id != userIds) {
+        manyAccounts.add(customer.cardNumber);
+      }
+    }
+
+
+
+
+
+
+
+
+    count = customers.where((customer) => customer.bvn == userBVN).length;
+
     return Scaffold(
       backgroundColor: AppColors.mainColor,
-      //backgroundColor: Colors.white,
       appBar: AppBar(
+          title: const Text('UI Banking App',style:
+            TextStyle(
+              color: Colors.black
+            ),),
           actions: [
-            PopupMenuButton(itemBuilder: (context) => [
-              PopupMenuItem(
-                child: ListTile(
-                  leading: const Icon(Icons.logout),
-                  title: const Text('Log Out'),
-                  onTap: () {
-                    // Navigate to the shopping screen
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const LoginPage()),
-                    );
-                  },
-                ),
-              )
-            ],
+            IconButton(
+              icon: const Icon(Icons.logout),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (builder) => const HomeView()),
+                );
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.content_copy),
+              onPressed: _copyAccountNumber,
             ),
           ]),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            const SizedBox(
-              height: 30,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    BigText(
-                      text: userName!,
-                      fontWeight: FontWeight.bold,
+            Padding(
+              padding: EdgeInsets.only(right: Dimensions.height16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(left: Dimensions.height16,top: Dimensions.height30,bottom: Dimensions.height16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        BigText(
+                          text: userName!,
+                          size: 25,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        SizedBox(
+                          height: Dimensions.height10,
+                        ),
+                        BigText(
+                          text: 'Account Balance: \$$userBalance',
+                        ),
+                      ],
                     ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    BigText(
-                      text: 'Account Balance: $userBalance',
-                    ),
-                  ],
-                ),
-                const CircleAvatar(
-                  radius: 30,
-                  backgroundImage: AssetImage(
-                    'assets/cr7.jpg',
                   ),
-                ),
-              ],
-            ),
-            SizedBox(
-              height: 300,
-              child: PageView.builder(
-                  controller: pageController,
-                  itemCount: 2,
-                  itemBuilder: (context, index) {
-                    return _buildPageItem(index);
-                  }),
-            ),
-            DotsIndicator(
-              dotsCount: 2,
-              position: currentValue.floor(),
-              decorator: DotsDecorator(
-                activeColor: AppColors.iconColor2,
-                size: const Size.square(9.0),
-                activeSize: const Size(18.0, 9.0),
-                activeShape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+                  CircleAvatar(
+                    radius: Dimensions.radius30,
+                    backgroundImage: AssetImage(
+                      userPicture!,
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(
-              height: 30,
+            SizedBox(
+              height: Dimensions.pageViewHome,
+              child: PageView.builder(
+                  controller: pageController,
+                  itemCount: count,
+                  itemBuilder: (context, index) {
+                    return bankCard(index,index);
+                  }),
+            ),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: DotsIndicator(
+                dotsCount: count,
+                position: currentValue.floor(),
+                decorator: DotsDecorator(
+                  activeColor: AppColors.iconColor2,
+                  size:  Size.square(Dimensions.height10),
+                  activeSize: Size(Dimensions.height20, Dimensions.height10),
+                  activeShape:
+                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+                ),
+              ),
+            ),
+            SizedBox(
+              height: Dimensions.height30,
             ),
 
             // Others
@@ -284,18 +333,18 @@ class _HomePageState extends State<HomePage>
                 ElevatedButton(
                   onPressed: _navigateToSendMoney,
                   child: Container(
-                    width: 120,
-                    height: 80,
+                    width: Dimensions.elevated120,
+                    height: Dimensions.height80,
                     decoration: BoxDecoration(
                       color: Colors.blue,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(Dimensions.height10),
                     ),
-                    child: const Center(
+                    child: Center(
                       child: Text(
                         'Send Money',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 16,
+                          fontSize: Dimensions.height16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -317,18 +366,18 @@ class _HomePageState extends State<HomePage>
                         ));
                   },
                   child: Container(
-                    width: 120,
-                    height: 80,
+                    width: Dimensions.elevated120,
+                    height: Dimensions.height80,
                     decoration: BoxDecoration(
                       color: Colors.green,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(Dimensions.height10),
                     ),
-                    child: const Center(
+                    child: Center(
                       child: Text(
                         'Update Account',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 16,
+                          fontSize: Dimensions.height16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -340,22 +389,28 @@ class _HomePageState extends State<HomePage>
                     backgroundColor: MaterialStateProperty.all<Color>(Colors.redAccent),
                   ),
                   onPressed: () {
-                    print(userIds);
                     _confirmDeleteAccount(context);
                   },
                   child: Container(
-                    width: 120,
-                    height: 80,
+                    width: Dimensions.elevated120,
+                    height: Dimensions.height80,
                     decoration: BoxDecoration(
                       color: Colors.redAccent,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(Dimensions.height10),
+                      boxShadow: [
+                      BoxShadow(
+                      spreadRadius: 7,
+                      blurRadius: 10,
+                      offset: const Offset(1, 1),
+                      color: Colors.redAccent.withOpacity(0.2),
+                    )],
                     ),
-                    child: const Center(
+                    child: Center(
                       child: Text(
                         'Delete Account',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 16,
+                          fontSize: Dimensions.height16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -364,8 +419,8 @@ class _HomePageState extends State<HomePage>
                 ),
               ],
             ),
-            const SizedBox(
-              height: 40,
+            SizedBox(
+              height: Dimensions.height45,
             ),
             //TRANSACTIONS
 
@@ -378,7 +433,8 @@ class _HomePageState extends State<HomePage>
 
 
 
-Widget _buildPageItem(int position) {
+Widget bankCard(int position, int accountIndex) {
+  String? cardNum = manyAccounts[accountIndex];
     Matrix4 matrix4 = Matrix4.identity();
     if (position == currentValue.floor()) {
       var currScale = 1 - (currentValue - position) * (1 - scaleFactor);
@@ -401,14 +457,19 @@ Widget _buildPageItem(int position) {
       child: Stack(
         children: [
           Container(
-            height: 250,
+            height: Dimensions.elevated250,
             margin: EdgeInsets.only(left: Dimensions.small, right: Dimensions.small),
             decoration: BoxDecoration(
+              image: const DecorationImage(
+                image: AssetImage('assets/card.png'),
+                fit: BoxFit.cover
+              ),
               borderRadius: BorderRadius.circular(Dimensions.sized),
-              color: Colors.white,
+              //color: Colors.white,
             ),
             child: Padding(
-              padding: const EdgeInsets.only(left: 12, top: 12, right: 12),
+              padding: EdgeInsets.only(
+                  left: Dimensions.height10, top: Dimensions.height10, right: Dimensions.height10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -417,32 +478,61 @@ Widget _buildPageItem(int position) {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
-                        children: const [
-                          BigText(text: 'UI Bank'),
-                          SizedBox(width: 280,),
-                          SizedBox(width: 8),  // Add a SizedBox for spacing
-                          Icon(Icons.toggle_off_outlined),
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        //crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          const BigText(text: 'UI Bank',fontWeight: FontWeight.bold,color: Colors.white,),
+                          SizedBox(width: Dimensions.elevated180,),
+                          //const SizedBox(width: 8),  // Add a SizedBox for spacing
+                          Container(
+                            padding: EdgeInsets.only(right: Dimensions.height10),
+                            height: Dimensions.height45,
+                            width: Dimensions.elevated120,
+                            decoration: const BoxDecoration(
+                              color: Colors.transparent,
+                                image: DecorationImage(
+                                  fit: BoxFit.cover,
+
+                                  image: AssetImage('assets/matercard.jpg')
+                                )
+                            ),
+                          )
                         ],
                       ),
                     ],
                   ),
-                  const SizedBox(height: 15,),
-                  const BigText(text: '**** **** **** 3987'),
-                  const SizedBox(height: 50,),
-                  Row(
-                    children: const [
-                      SmallText(text: 'card holder name'),
-                      SizedBox(width: 70,),
-                      SmallText(text: 'Expiry Date'),
-                    ],
+                  SizedBox(height: Dimensions.height60,),
+                  BigText(text: '••••     ••••     ••••    ${cardNum?.substring(cardNum.length-4)}',
+                    size: Dimensions.height45,),
+                  SizedBox(height: Dimensions.height30,),
+                  Padding(
+                    padding: EdgeInsets.only(left: Dimensions.height16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children:  [
+                        SizedBox(
+                            width: Dimensions.pageView140,
+                            child: BigText(text: userName!,size: Dimensions.height20,)),
+
+                        Padding(
+                          padding: EdgeInsets.only(right: Dimensions.height20),
+                          child: const BigText(text: '02/23'),
+                        ),
+
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 20,),
-                  Row(
-                    children:  [
-                      BigText(text: userName!),
-                      const SizedBox(width: 33,),
-                      const BigText(text: '02/23'),
-                    ],
+                  SizedBox(height: Dimensions.height10,),
+                  Padding(
+                    padding: EdgeInsets.only(left: Dimensions.height16,right: Dimensions.height16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children:  [
+                        SmallText(text: 'Card Holder Name',size: Dimensions.height16,),
+                        const SmallText(text: 'Expiry Date'),
+
+                      ],
+                    ),
                   ),
                 ],
               ),
