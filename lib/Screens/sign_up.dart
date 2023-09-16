@@ -2,7 +2,10 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_udid/flutter_udid.dart';
 import '../Utilities/card.dart';
+import '../Utilities/dimensions.dart';
 import 'log_in_page.dart';
+import 'package:intl/intl.dart'; // For date formatting
+
 
 
 class SignUp extends StatefulWidget {
@@ -18,17 +21,32 @@ class _SignUpState extends State<SignUp> {
   TextEditingController dobController = TextEditingController();
   TextEditingController bvnController = TextEditingController();
   TextEditingController phoneNumberController = TextEditingController();
-
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   TextEditingController confirmPasswordController = TextEditingController();
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final List<String> gender = ['Select','Male','Female'];
+  String userGender = '';
   late double amount;
   String customerId = 'UNKNOWN';
+  DateTime? selectedDate; // Holds the selected date
 
-
-
+  Future<void> _selectDate() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(), // Set the initial date
+      firstDate: DateTime(1900), // Set the earliest selectable date
+      lastDate: DateTime.now(), // Set the latest selectable date
+    );
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        selectedDate = picked;
+        dobController.text = DateFormat('yyyy-MM-dd').format(selectedDate!).toString();
+        //dobController.text = selectedDate;
+      });
+    }
+  }
 
   String generateAccountNumber() {
     Random random = Random();
@@ -56,13 +74,13 @@ class _SignUpState extends State<SignUp> {
       // Generate Customer ID using flutter_udid
       generateCustomerId().then((customerId) {
         String accountNumber = generateAccountNumber();
+        print(accountNumber);
 
         // Resetting form fields
         firstNameController.clear();
         lastNameController.clear();
         dobController.clear();
         bvnController.clear();
-
         emailController.clear();
         passwordController.clear();
         confirmPasswordController.clear();
@@ -87,7 +105,7 @@ class _SignUpState extends State<SignUp> {
 
         // Showing success message or navigate to the next screen
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Signup successful!')),
+          const SnackBar(content: Text('Signup successful! Please log in')),
         );
         // Navigate to the login page with the user ID
         Future.delayed(const Duration(seconds: 2), () {
@@ -105,14 +123,15 @@ class _SignUpState extends State<SignUp> {
   }
 
   Future<String> generateCustomerId() async {
-    String _udid;
+    //Function to generate customer's ID
+    String id;
     try {
-      _udid = (await FlutterUdid.consistentUdid).toString();
+      id = (await FlutterUdid.consistentUdid).toString();
     } catch (e) {
       print('Failed to generate customers ID: $e');
       rethrow;
     }
-    customerId = _udid;
+    customerId = id;
     return customerId.substring(0,8);
   }
 
@@ -145,10 +164,10 @@ class _SignUpState extends State<SignUp> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.only(left: 20),
+                  padding: EdgeInsets.only(left: Dimensions.height20),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(Dimensions.radius30),
                     boxShadow: [
                       BoxShadow(
                         spreadRadius: 7,
@@ -172,12 +191,12 @@ class _SignUpState extends State<SignUp> {
                     },
                   ),
                 ),
-                const SizedBox(height: 20,),
+                SizedBox(height: Dimensions.height20),
                 Container(
-                  padding: const EdgeInsets.only(left: 20),
+                  padding: EdgeInsets.only(left: Dimensions.height20),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(Dimensions.radius30),
                     boxShadow: [
                       BoxShadow(
                         spreadRadius: 7,
@@ -203,10 +222,10 @@ class _SignUpState extends State<SignUp> {
                 ),
                 const SizedBox(height: 20,),
                 Container(
-                  padding: const EdgeInsets.only(left: 20),
+                  padding: EdgeInsets.only(left: Dimensions.height20),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(Dimensions.radius30),
                     boxShadow: [
                       BoxShadow(
                         spreadRadius: 7,
@@ -218,24 +237,67 @@ class _SignUpState extends State<SignUp> {
                   ),
                   child: TextFormField(
                     controller: dobController,
-                    decoration: const InputDecoration(
-                        prefixIcon: Icon(Icons.calendar_view_day_rounded),
-                        border: InputBorder.none,
-                        labelText: 'Date of Birth'),
-                    validator: (value) {
-                      if (value!.isEmpty) {
-                        return 'Please enter your date of birth';
+                    readOnly: true, // Prevent direct editing of the field
+                    onTap: () {
+                      _selectDate();
+                    },
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      labelText: 'Date of Birth',
+                      hintText:  selectedDate != null? dobController.text
+                          : 'Select Date',
+                    ),
+                  )
+
+                ),
+                SizedBox(height: Dimensions.height20),
+
+                Container(
+                  height: 60,
+                  padding: EdgeInsets.only(left: 30,right: 20,top: 20),
+
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(Dimensions.radius30),
+                    boxShadow: [
+                    BoxShadow(
+                    spreadRadius: 7,
+                    blurRadius: 10,
+                    offset: const Offset(1, 1),
+                    color: Colors.grey.withOpacity(0.2),
+                  )]
+                  ),
+                  child: DropdownButtonFormField<String>(
+                    decoration: const InputDecoration.collapsed(hintText: ''),
+                    validator: (val){
+                      if(val=='Select'){
+                        return 'Choose a gender';
                       }
-                      return null;
+                    },
+                    value: userGender.isNotEmpty ? userGender : 'Select', // Use a unique value for initial selection
+                    items: gender.map((String val) {
+                      return DropdownMenuItem<String>(
+                        value: val,
+                        child: Text(val),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        userGender = value!;
+                      });
                     },
                   ),
                 ),
-                const SizedBox(height: 20,),
+
+
+
+                SizedBox(height: Dimensions.height20),
+
                 Container(
-                  padding: const EdgeInsets.only(left: 20),
+                  padding: EdgeInsets.only(left: Dimensions.height20),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(Dimensions.radius30),
                     boxShadow: [
                       BoxShadow(
                         spreadRadius: 7,
@@ -262,12 +324,12 @@ class _SignUpState extends State<SignUp> {
                     },
                   ),
                 ),
-                const SizedBox(height: 20,),
+                SizedBox(height: Dimensions.height20,),
                 Container(
-                  padding: const EdgeInsets.only(left: 20),
+                  padding: EdgeInsets.only(left: Dimensions.height20),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(Dimensions.radius30),
                     boxShadow: [
                       BoxShadow(
                         spreadRadius: 7,
@@ -291,47 +353,47 @@ class _SignUpState extends State<SignUp> {
                     },
                   ),
                 ),
-                const SizedBox(height: 20,),
-              Container(
-                padding: const EdgeInsets.only(left: 20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [
-                    BoxShadow(
-                      spreadRadius: 7,
-                      blurRadius: 10,
-                      offset: const Offset(1, 1),
-                      color: Colors.grey.withOpacity(0.2),
-                    ),
-                  ],
-                ),
-                child: TextFormField(
-                  decoration: const InputDecoration(
-                      prefixIcon: Icon(Icons.attach_money),
-                      border: InputBorder.none,
-                      labelText: 'Amount to Deposit'),
-                  validator: (value) {
-                    if (value!.isEmpty) {
-                      return 'Please enter the amount to deposit';
-                    }
-
-                    try {
-                      amount =double.parse(value);
-                    } catch (e) {
-                      return 'Invalid amount';
-                    }
-                    return null;
-                  },
-                ),
-              ),
-                const SizedBox(height: 20,),
-
+                SizedBox(height: Dimensions.height20,),
                 Container(
-                  padding: const EdgeInsets.only(left: 20),
+                  padding: EdgeInsets.only(left: Dimensions.height20),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(Dimensions.radius30),
+                    boxShadow: [
+                      BoxShadow(
+                        spreadRadius: 7,
+                        blurRadius: 10,
+                        offset: const Offset(1, 1),
+                        color: Colors.grey.withOpacity(0.2),
+                      ),
+                    ],
+                  ),
+                  child: TextFormField(
+                    decoration: const InputDecoration(
+                        prefixIcon: Icon(Icons.attach_money),
+                        border: InputBorder.none,
+                        labelText: 'Amount to Deposit'),
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'Please enter the amount to deposit';
+                      }
+
+                      try {
+                        amount =double.parse(value);
+                      } catch (e) {
+                        return 'Invalid amount';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                SizedBox(height: Dimensions.height20),
+
+                Container(
+                  padding: EdgeInsets.only(left: Dimensions.height20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(Dimensions.radius30),
                     boxShadow: [
                       BoxShadow(
                         spreadRadius: 7,
@@ -344,7 +406,7 @@ class _SignUpState extends State<SignUp> {
                   child: TextFormField(
                     controller: emailController,
                     decoration: const InputDecoration(
-                        prefixIcon: Icon(Icons.password_sharp),
+                        prefixIcon: Icon(Icons.email_rounded),
                         border: InputBorder.none,
                         labelText: 'Email'),
                     validator: (value) {
@@ -356,12 +418,12 @@ class _SignUpState extends State<SignUp> {
                     },
                   ),
                 ),
-                const SizedBox(height: 20,),
+                SizedBox(height: Dimensions.height20,),
                 Container(
-                  padding: const EdgeInsets.only(left: 20),
+                  padding: EdgeInsets.only(left: Dimensions.height20),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(Dimensions.radius30),
                     boxShadow: [
                       BoxShadow(
                         spreadRadius: 7,
@@ -375,24 +437,26 @@ class _SignUpState extends State<SignUp> {
                     controller: passwordController,
                     decoration: const InputDecoration(
                         border: InputBorder.none,
-                        prefixIcon: Icon(Icons.password_sharp),
+                        prefixIcon: Icon(Icons.lock_clock_outlined),
                         labelText: 'Password'),
                     obscureText: true,
                     validator: (value) {
                       if (value!.isEmpty) {
                         return 'Please enter a password';
+                      }else if(value.length < 6){
+                        return 'password must be at least 6 characters';
                       }
 
                       return null;
                     },
                   ),
                 ),
-                const SizedBox(height: 20,),
+                SizedBox(height: Dimensions.height20,),
                 Container(
-                  padding: const EdgeInsets.only(left: 20),
+                  padding: EdgeInsets.only(left: Dimensions.height20),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(Dimensions.radius30),
                     boxShadow: [
                       BoxShadow(
                         spreadRadius: 7,
@@ -407,7 +471,7 @@ class _SignUpState extends State<SignUp> {
                     decoration: const InputDecoration(
                         labelText: 'Confirm Password',
                         border: InputBorder.none,
-                        prefixIcon: Icon(Icons.password_sharp)
+                        prefixIcon: Icon(Icons.lock)
                     ),
                     obscureText: true,
                     validator: (value) {
@@ -421,7 +485,7 @@ class _SignUpState extends State<SignUp> {
                     },
                   ),
                 ),
-                const SizedBox(height: 26.0),
+                const SizedBox(height: 25.0),
                 Center(
                   child: ElevatedButton(
                     onPressed: _submitForm,
