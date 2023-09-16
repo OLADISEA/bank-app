@@ -14,9 +14,11 @@ class Details {
   final String bvn;
   final String accountNumber;
   final String phoneNumber;
+  final String picture;
   List<Transaction> transactions;
 
   Details({
+    this.picture = 'assets/Ronaldinho.jpg',
     required this.phoneNumber,
     this.accountNumber = '378974639',
     required this.bvn,
@@ -37,16 +39,17 @@ List<Details> customers = [
   Details(
     name: 'Oladokun Tosin',
     id: '1937279',
-    accountNumber: '3719637251',
+    accountNumber: '3719630251',
     bvn: '87109626179',
     phoneNumber: '0808858464',
     email: 'ladisea55@gmail.com',
     password: 'Oladisea1234',
     balance: 5000.45,
     logo: "assets/visa.jpg",
-    cardNumber: " ••••     ••••     ••••     5678",
+    cardNumber: " ••••     ••••     ••••     8287",
     title: "VISA",
     plan: "PLATINUM",
+    picture: "assets/cr7.jpg",
     transactions: [], // Add empty transactions list or provide actual transactions
   ),
   Details(
@@ -62,6 +65,38 @@ List<Details> customers = [
     cardNumber: " ••••     ••••     ••••     2304",
     title: "MASTERCARD",
     plan: "PREMIUM",
+    picture: "assets/messi.jpg",
+    transactions: [], // Add empty transactions list or provide actual transactions
+  ),
+  Details(
+    name: 'Oladokun Tosin',
+    id: '12819464',
+    accountNumber: '3719238198',
+    bvn: '87109626179',
+    phoneNumber: '0808858464',
+    email: 'ladisea55@gmail.com',
+    password: 'Oladisea1',
+    balance: 8000.00,
+    logo: "assets/visa.jpg",
+    cardNumber: " ••••     ••••     ••••     1236",
+    title: "VISA",
+    plan: "PLATINUM",
+    picture: "assets/Mbappe.jpg",
+    transactions: [], // Add empty transactions list or provide actual transactions
+  ),Details(
+    name: 'Oladokun Tosin',
+    id: '18064437',
+    accountNumber: '3719737251',
+    bvn: '87109626179',
+    phoneNumber: '0808858464',
+    email: 'ladisea54@gmail.com',
+    password: 'Oladisea123',
+    balance: 5000.45,
+    logo: "assets/visa.jpg",
+    cardNumber: " ••••     ••••     ••••     0678",
+    title: "VISA",
+    plan: "PLATINUM",
+    picture: 'assets/Hazard.jpg',
     transactions: [], // Add empty transactions list or provide actual transactions
   ),
   Details(
@@ -77,6 +112,7 @@ List<Details> customers = [
     cardNumber: " ••••     ••••     ••••     4783",
     title: "PAYPAL",
     plan: "PLATINUM",
+    picture: "assets/messi.jpg",
     transactions: [], // Add empty transactions list or provide actual transactions
   ),
 ];
