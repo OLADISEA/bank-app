@@ -1,3 +1,4 @@
+import 'package:bank_app/Utilities/dimensions.dart';
 import 'package:flutter/material.dart';
 
 import '../Utilities/card.dart';
@@ -47,18 +48,29 @@ class _SendMoneyState extends State<SendMoney> {
     if (recipientExists && receiver != null) {
       // Check if the sender has sufficient balance
       if (balance >= double.parse(amount)) {
-        // Create a new transaction
-        Transaction transaction = Transaction(
+        // Create a new transaction with type as "send" for sender
+        Transaction senderTransaction = Transaction(
           date: DateTime.now().toString(),
           senderId: sender!.id,
-          senderName: receiver.name,
+          senderName: sender.name, // Use the sender's name
           receiverId: receiver.id,
           amount: double.parse(amount),
+          type: TransactionType.send,
         );
 
-        // Save the transaction for sender and receiver
-        sender.transactions.add(transaction);
-        receiver.transactions.add(transaction);
+        // Create a new transaction with type as "receive" for receiver
+        Transaction receiverTransaction = Transaction(
+          date: DateTime.now().toString(),
+          senderId: sender.id,
+          senderName: sender.name, // Use the sender's name
+          receiverId: receiver.id,
+          amount: double.parse(amount),
+          type: TransactionType.receive,
+        );
+
+        // Save the transactions for sender and receiver
+        sender.transactions.add(senderTransaction);
+        receiver.transactions.add(receiverTransaction);
 
         // Update sender's balance
         sender.balance -= double.parse(amount);
@@ -76,7 +88,7 @@ class _SendMoneyState extends State<SendMoney> {
         );
 
         // Invoke the onTransferSuccess callback
-        widget.onTransferSuccess(transaction);
+        widget.onTransferSuccess(senderTransaction);
 
         // Navigate back to the previous screen
         Navigator.of(context).pop();
@@ -145,7 +157,7 @@ class _SendMoneyState extends State<SendMoney> {
               decoration: const InputDecoration(labelText: 'Amount'),
               keyboardType: TextInputType.number,
             ),
-            const SizedBox(height: 16.0),
+            SizedBox(height: Dimensions.height16),
             ElevatedButton(
               onPressed: _sendMoney,
               child: const Text('Send'),
