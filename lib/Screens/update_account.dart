@@ -1,3 +1,4 @@
+import 'package:bank_app/Utilities/dimensions.dart';
 import 'package:flutter/material.dart';
 
 import '../Utilities/card.dart';
@@ -107,7 +108,7 @@ class _AccountUpdatePageState extends State<AccountUpdatePage> {
         title: const Text('Account Update'),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(Dimensions.height16),
         child: Form(
           key: _formKey,
           child: Column(
@@ -116,7 +117,7 @@ class _AccountUpdatePageState extends State<AccountUpdatePage> {
                 padding: const EdgeInsets.only(left: 25),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(30),
+                  borderRadius: BorderRadius.circular(Dimensions.radius30),
                   boxShadow: [
                     BoxShadow(
                       spreadRadius: 7,
@@ -142,12 +143,12 @@ class _AccountUpdatePageState extends State<AccountUpdatePage> {
                   onSaved: (value) => _name = value!,
                 ),
               ),
-              const SizedBox(height: 20,),
+              SizedBox(height: Dimensions.height20,),
               Container(
                 padding: const EdgeInsets.only(left: 25),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(30),
+                  borderRadius: BorderRadius.circular(Dimensions.radius30),
                   boxShadow: [
                     BoxShadow(
                       spreadRadius: 7,
@@ -174,12 +175,12 @@ class _AccountUpdatePageState extends State<AccountUpdatePage> {
                   onSaved: (value) => _email = value!,
                 ),
               ),
-              const SizedBox(height: 20,),
+              SizedBox(height: Dimensions.height20,),
               Container(
                 padding: const EdgeInsets.only(left: 25),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(30),
+                  borderRadius: BorderRadius.circular(Dimensions.radius30),
                   boxShadow: [
                     BoxShadow(
                       spreadRadius: 7,
@@ -205,16 +206,16 @@ class _AccountUpdatePageState extends State<AccountUpdatePage> {
                   onSaved: (value) => _password = value!,
                 ),
               ),
-              const SizedBox(height: 20,),
+              SizedBox(height: Dimensions.height20,),
               Container(
                 padding: const EdgeInsets.only(left: 25),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(30),
+                  borderRadius: BorderRadius.circular(Dimensions.radius30),
                   boxShadow: [
                     BoxShadow(
                       spreadRadius: 7,
-                      blurRadius: 10,
+                      blurRadius: Dimensions.height10,
                       offset: const Offset(1, 1),
                       color: Colors.grey.withOpacity(0.2),
                     ),
@@ -236,7 +237,7 @@ class _AccountUpdatePageState extends State<AccountUpdatePage> {
                   onSaved: (value) => phoneNumber = value!,
                 ),
               ),
-              const SizedBox(height: 16.0),
+              SizedBox(height: Dimensions.height16),
               ElevatedButton(
                 onPressed: _updateAccount,
                 child: const Text('Update Account'),
